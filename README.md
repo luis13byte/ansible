@@ -26,8 +26,12 @@ Para ejecutar esta herramienta usare un contenedor Docker que he preparado con e
 
 ~~~
 FROM alpine:latest
+LABEL maintainer="Luis A. <luis13cst@gmail.com>"
 
+# Install Ansible and dependencies
 RUN apk update && apk add ansible openssh nano
+
+# Copy hosts and config file
 COPY disk/etc/ansible /etc/ansible
 ENV ANSIBLE_CONFIG=/etc/ansible/ansible.cfg
 ~~~
@@ -35,6 +39,7 @@ ENV ANSIBLE_CONFIG=/etc/ansible/ansible.cfg
 ## Playbook en Windows
 Luego para aplicar una configuración creamos un script el cual se conoce en Ansible como “playbook”, que contendrá diferentes tareas que a su vez estas contienen módulos de Ansible para facilitar la creación de tasks.
 
+~~~
 ---
 - name: Limpiando windows
   hosts: host.domain.ip
@@ -79,12 +84,10 @@ Luego para aplicar una configuración creamos un script el cual se conoce en Ans
     ansible.windows.win_regedit:
     path: HKCU:\Software\Microsoft\Windows NT\CurrentVersion\ProfileList\437165193
     name: hello
-
- 
-
+~~~
 
 
-## Ejecución en multiples hosts usando Inventario (no dinamico)
+## Ejecución en multiples hosts usando Inventory (no dinamico)
 Ansible trabaja contra múltiples sistemas en su infraestructura al mismo tiempo. Para ello, selecciona partes de los sistemas enumerados en el inventario de Ansible, que por defecto se guardan en la ubicación /etc/ansible/hosts.
 
 ~~~
