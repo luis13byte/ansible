@@ -10,14 +10,21 @@ Actualmente Ansible puede ejecutarse desde cualquier máquina con Python 2 (vers
 ### Requisitos de los nodos administrados
 Necesitamos una forma de comunicarnos con los nodos gestionados, y se suele hacer mediante SSH. También se necesita Python 2 (versión 2.7) o Python 3 (versiones 3.5 y posteriores)
 
-Descarga en Linux:
+- [x] Python
+- [x] OpenSSH Server
+
+Instalando dependencias en Linux:
 ~~~
-sudo apt-get install -y python-minimal
+sudo apt-get install -y python-minimal openssh
 ~~~
 
-Descarga en Windows (Powershell):
+Instalando dependencias en Windows (Powershell):
 ~~~
 Invoke https://www.python.org/ftp/python/3.9.1/python-3.9.1-amd64.exe
+~~~
+
+~~~
+Start-Service sshd
 ~~~
 
 ## Creación del contenedor 
