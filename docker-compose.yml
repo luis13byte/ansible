@@ -1,0 +1,12 @@
+version: "3.7"
+
+services:
+  ansible-server:
+    build: .
+    container_name: ansible-server
+    tty: true
+    hostname: alpine.ansible.net
+    volumes:
+      - "./disk/etc/ansible:/etc/ansible"
+      - "./disk/playbook:/playbook"
+    network_mode: bridge

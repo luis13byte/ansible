@@ -1,0 +1,39 @@
+---
+- name: Limpiando windows
+  hosts: host.domain.ip
+  become: true
+ 
+  tasks:
+  - name: borrar los usuarios 
+    win_user:
+      name: user
+      state: absent
+
+  - name: crear usuarios 
+    win_user:
+      name: asix
+      password: B0bP4ssw0rd
+      state: present
+      groups:
+        - Users
+
+  - name: ensure local admin account exists
+      win_user:
+      name: localadmin
+      password: '{{ local_admin_password }}'
+      groups: Administrators
+
+  - name: Remove Internet Explorer Logs
+     win_eventlog:
+      name: Internet Explorer
+      state: absent
+ 
+  - name: Ejecutar comando de Windows
+     win_command: wmic cpu get caption, deviceid, name, numberofcores, maxclockspeed, status
+     register: usage
+
+  - name: Remove registry path (including all entries it contains)
+    ansible.windows.win_regedit:
+    path: HKCU:\Software\Microsoft\Windows NT\CurrentVersion\ProfileList\487214621
+    state: absent
+    delete_key: yes

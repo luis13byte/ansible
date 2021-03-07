@@ -1,0 +1,4 @@
+[asix_dual_class]
+aura12 ansible_host=11.22.33.44
+aura13 ansible_host=22.33.44.55
+win10 ansible_host=192.168.1.139
