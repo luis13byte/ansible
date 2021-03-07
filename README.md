@@ -107,7 +107,7 @@ aura13 ansible_host=22.33.44.55
 ## Playbook de Linux
 
 
-Con el siguiente comando vemos todos los usuarios que no sean root. awk -F: '($3 >= 1000) {printf "%s\n",$1}' /etc/passwd
+Con el siguiente comando vemos todos los usuarios que no sean root, nobody y el primer usuario creado (asix), esto se podría procesar con xargs para borrar. awk -F: '($3 >= 1001) {printf "%s\n",$1}' /etc/passwd | sed '/nobody/d'
 
 ~~~
   vars:
