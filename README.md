@@ -29,7 +29,7 @@ Start-Service sshd
 
 ## Creación del contenedor 
 
-Para ejecutar esta herramienta usare un contenedor Docker que he preparado con el siguiente Dockerfile:
+Para ejecutar esta herramienta usare un contenedor Docker que he preparado con el siguiente Dockerfile basado en Alpine Linux:
 
 ~~~
 FROM alpine:latest
@@ -44,21 +44,21 @@ ENV ANSIBLE_CONFIG=/etc/ansible/ansible.cfg
 ~~~
 
 ## Playbook en Windows
-Luego para aplicar una configuración creamos un script el cual se conoce en Ansible como “playbook”, que contendrá diferentes tareas que a su vez estas contienen módulos de Ansible para facilitar la creación de tasks.
+Luego para aplicar una configuración creamos un script el cual se conoce en Ansible como “playbook”, que contendrá diferentes tareas que a su vez estas contienen módulos de Ansible para facilitar la automatización de las configuraciones. Para los sistemas Windows se han utilizado modulos para borrar/crear usuarios y modificar el registro de Windows.
 
 ~~~
 ---
 - name: Limpiando windows
   hosts: host.domain.ip
   become: true
- 
+
   tasks:
-  - name: borrar los usuarios 
+  - name: borrar los usuarios
     win_user:
       name: user
       state: absent
 
-  - name: crear usuarios 
+  - name: crear usuarios
     win_user:
       name: asix
       password: B0bP4ssw0rd
@@ -76,7 +76,7 @@ Luego para aplicar una configuración creamos un script el cual se conoce en Ans
      win_eventlog:
       name: Internet Explorer
       state: absent
- 
+
   - name: Ejecutar comando de Windows
      win_command: wmic cpu get caption, deviceid, name, numberofcores, maxclockspeed, status
      register: usage
@@ -86,44 +86,66 @@ Luego para aplicar una configuración creamos un script el cual se conoce en Ans
     path: HKCU:\Software\Microsoft\Windows NT\CurrentVersion\ProfileList\487214621
     state: absent
     delete_key: yes
-
-  - name: Remove entry 'hello' from registry path MyCompany
-    ansible.windows.win_regedit:
-    path: HKCU:\Software\Microsoft\Windows NT\CurrentVersion\ProfileList\437165193
-    name: hello
 ~~~
 
 
-## Ejecución en multiples hosts usando Inventory (no dinamico)
-Ansible trabaja contra múltiples sistemas en su infraestructura al mismo tiempo. Para ello, selecciona partes de los sistemas enumerados en el inventario de Ansible, que por defecto se guardan en la ubicación /etc/ansible/hosts.
+## Ejecución en multiples hosts usando Inventory.
+Ansible trabaja contra múltiples sistemas en su infraestructura al mismo tiempo. Para ello, selecciona partes de los sistemas enumerados en el Inventory de Ansible, que por defecto se guarda en la ubicación /etc/ansible/hosts. 
+
+Como podemos observar se declara el nombre del host y la IP para asociarlo a ese nombre, como configuración adicional he guardado los hosts en el grupo asix-dual-class.
 
 ~~~
 [asix-dual-class]
 aura12 ansible_host=11.22.33.44
 aura13 ansible_host=22.33.44.55
-# aura[11:13]
 ~~~
+
+Si un host no esta declarado en Inventory Ansible no podra acceder a él, también es posible y preferible en algunos casos declarar un Dynamic Inventory si tenemos una gran cantidad de hosts remotos y se actualizan con frecuencia. Por ejemplo en un escenario de un proveedor de cloud computing donde el inventario de los hosts ya existe, en ese caso, hacer uno propio sería simplemente una pérdida de tiempo. En la época del cloud computing, donde la infraestructura está creciendo bajo demanda, el archivo de inventario estático se volverá obsoleto rápidamente.
+
 
 ## Playbook de Linux
-
-
-Con el siguiente comando vemos todos los usuarios que no sean root, nobody y el primer usuario creado (asix), esto se podría procesar con xargs para borrar. awk -F: '($3 >= 1001) {printf "%s\n",$1}' /etc/passwd | sed '/nobody/d'
+Para el playbook que se ejecutará en Linux usamos modulos diferentes, además de mostrar como se pasaría un comando de shell a variable de Ansible, para posteriormente usar esta variable como listado de usuarios a eliminar.
 
 ~~~
-  vars:
-    myusers: ['root', 'bin', 'mail', 'obama', 'trump', 'clinton', 'you', 'me']
+---
+- name: Limpiando linux
+  hosts: host.domain.ip
+  become: true
 
   tasks:
-  - shell: 'cut -d: -f1 /etc/passwd'
-    register: users
-  - user: name={{item}} state=absent remove=yes
-    with_items: users.stdout_lines
-    when: item not in myusers
+
+  - name: Registing shell command (users for remove) like variable
+    shell: 'awk -F: '($3 >= 1001) {printf "%s\n",$1}' /etc/passwd | sed '/nobody/d''
+    register: remove_users_output
+
+  - name: Remove Users
+    user:
+      name: "{{ item }}"
+      state: absent
+      with_items: "{{ remove_users_output }}"
+
+  - name: Ensure user ricardo exists
+    user:
+    name: asix
+    group: users
+    groups: sudo
+    uid: 1001
+    password: "{{ 'lacontraseñasecreta' | password_hash('sha512') }}"
+    state: present
+
+  - name: Purge the user home
+    command: "rm -rf /home/asix/"
+    notify:
+    - Run mkhomedir
+
+  handlers:
+    - name: Run mkhomedir
+      command: "mkhomedir_helper asix"
 ~~~
 
-## Conectando el cliente Windows
+## Conectando el cliente de Ansible
 
-Si todo ha ido bien, deberíamos poder ejecutar un comando de prueba PING de Ansible. Este comando simplemente se conectará al servidor WinServer1 remoto e informará el éxito o el fracaso.
+Si todo ha ido bien y hemos cumplido los requisitos, deberíamos poder ejecutar un comando de prueba PING de Ansible. Podemos utilizar un comando ad-hoc de Ansible que simplemente se conectará al servidor remoto e informará el éxito o el fracaso.
 
 ~~~
 ansible maquina_remota -m win_ping
