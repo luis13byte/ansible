@@ -89,7 +89,7 @@ Luego para aplicar una configuración creamos un script el cual se conoce en Ans
 ~~~
 
 
-## Ejecución en multiples hosts usando Inventory.
+## Ejecución en multiples hosts usando Inventory
 Ansible trabaja contra múltiples sistemas en su infraestructura al mismo tiempo. Para ello, selecciona partes de los sistemas enumerados en el Inventory de Ansible, que por defecto se guarda en la ubicación /etc/ansible/hosts. 
 
 Como podemos observar se declara el nombre del host y la IP para asociarlo a ese nombre, como configuración adicional he guardado los hosts en el grupo asix-dual-class.
