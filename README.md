@@ -145,7 +145,7 @@ Para el playbook que se ejecutará en Linux usamos modulos diferentes, además d
 
 ## Conectando el cliente de Ansible
 
-Si todo ha ido bien y hemos cumplido los requisitos, deberíamos poder ejecutar un comando de prueba PING de Ansible. Podemos utilizar un comando ad-hoc de Ansible que simplemente se conectará al servidor remoto e informará el éxito o el fracaso.
+Si todo ha ido bien, hemos cumplido los requisitos y hemos copiado la clave publica SSH del servidor en el cliente (para acceder sin contraseña), deberíamos poder ejecutar un comando de prueba PING de Ansible. Podemos utilizar un comando ad-hoc de Ansible que simplemente se conectará al servidor remoto e informará el éxito o el fracaso.
 
 ~~~
 ansible maquina_remota -m win_ping
