@@ -1,0 +1,43 @@
+---
+- name: Basic playbook for security
+  gather_facts: No
+  hosts: servidork8s
+
+  vars:
+    allowed_ssh_networks:
+      - 192.168.1.0/24
+      - 54.34.10.0/28
+    unnecessary_services:
+      - postfix
+      - telnet
+    unnecessary_software:
+      - tcpdump
+      - wpa_supplicant
+
+  tasks:
+  - name: Perform full patching
+      package:
+        name: '*'
+        state: latest
+
+  - name: Add hardened SSH config
+      copy:
+        dest: /etc/ssh/sshd_config
+        src: etc/ssh/sshd_config
+        owner: root
+        group: root
+        mode: 0600
+      notify: Reload SSH
+
+  - name: Remove undesirable packages
+    package:
+      name: "{{ unnecessary_software }}"
+      state: absent
+
+  - name: Stop and disable unnecessary services
+    service:
+      name: "{{ item }}"
+      state: stopped
+      enabled: no
+    with_items: "{{ unnecessary_services }}"
+    ignore_errors: yes
