@@ -1,5 +1,5 @@
 FROM alpine:latest
-LABEL maintainer="Luis A. <luis13cst@gmail.com>"
+LABEL maintainer="Luis Acosta <luis13cst@gmail.com>"
 
 # Install Ansible and dependencies
 RUN apk update && apk add ansible openssh nano
